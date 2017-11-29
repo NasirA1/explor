@@ -1,6 +1,7 @@
 #include <nana/gui/wvl.hpp>
 #include <nana/gui/widgets/label.hpp>
 
+#if 0
 int main()
 {
   using namespace nana;
@@ -11,7 +12,7 @@ int main()
   exec();
 }
 
-#if 0
+#else
 #include <nana/gui.hpp>
 #include <nana/gui/widgets/label.hpp>
 #include <nana/gui/widgets/button.hpp>
