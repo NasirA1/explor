@@ -1,21 +1,7 @@
-#include <nana/gui/wvl.hpp>
-#include <nana/gui/widgets/label.hpp>
-
-#if 0
-int main()
-{
-  using namespace nana;
-  form fm;
-  label lb(fm, rectangle(fm.size()));
-  lb.caption("Hello, World!");
-  fm.show(); 
-  exec();
-}
-
-#else
 #include <nana/gui.hpp>
 #include <nana/gui/widgets/label.hpp>
 #include <nana/gui/widgets/button.hpp>
+#include <nana/gui/widgets/listbox.hpp>
 
 int main(int argc, char* argv[])
 {
@@ -33,11 +19,24 @@ int main(int argc, char* argv[])
     fm.close();
   });
 
+	listbox lsbox(fm);
+	lsbox.scheme().header_bgcolor = nana::colors::yellow;
+	lsbox.scheme().header_grabbed = nana::colors::chocolate;
+	lsbox.append_header("Name");
+	lsbox.append_header("Age");
+	auto cat = lsbox.at(0); //access the default category.
+	cat.append({ "Jack", "20" });	//Insert an item
+	cat.push_back("Rose");		//Insert another item
+	cat.back().text(1, "21");
+
   //Layout management
-  fm.div("vert <><<><weight=80% text><>><><weight=24<><button><>><>");
+  fm.div("vert <><<><weight=80% text><>><listbox><weight=24<><button><>><>");
   fm["text"] << lab;
-  fm["button"] << btn;
+	fm["listbox"] << lsbox;
+	fm["button"] << btn;
   fm.collocate();
+
+	API::refresh_window(lsbox);
 
   //Show the form
   fm.show();
@@ -47,4 +46,3 @@ int main(int argc, char* argv[])
 
   return 0;
 }
-#endif
