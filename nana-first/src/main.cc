@@ -1,48 +1,101 @@
 #include <nana/gui.hpp>
-#include <nana/gui/widgets/label.hpp>
-#include <nana/gui/widgets/button.hpp>
-#include <nana/gui/widgets/listbox.hpp>
+#include <nana/gui/widgets/menubar.hpp>
+#include <nana/gui/widgets/textbox.hpp>
+#include <nana/gui/place.hpp>
+#include <nana/gui/msgbox.hpp>
+#include <nana/gui/filebox.hpp>
+#include <iostream>
+#include <string>
+#include <future>
+#ifdef _WIN32
+#include <conio.h>
+#endif
 
-int main(int argc, char* argv[])
+
+using namespace nana;
+
+
+class notepad_form : public form
 {
-  using namespace nana;
+public:
+	notepad_form()
+	{
+		caption("Tap");
+		textbox_.borderless(true);
+		API::effects_edge_nimbus(textbox_, effects::edge_nimbus::none);
+		_m_make_menus();
 
-  form fm;
+		place_.div("vert<menubar weight=28><textbox>");
+		place_["menubar"] << menubar_;
+		place_["textbox"] << textbox_;
+		place_.collocate();
+	}
 
-  //Define a label and display a text.
-  label lab{fm, "Hello, <bold blue size=16>Nana C++ Library</>"};
-  lab.format(true);
+	
+	void append(const std::string& str)
+	{
+		textbox_.append(str, false);
+	}
 
-  //Define a button and answer the click event.
-  button btn{fm, "Quit"};
-  btn.events().click([&fm] {
-    fm.close();
-  });
 
-	listbox lsbox(fm);
-	lsbox.scheme().header_bgcolor = nana::colors::yellow;
-	lsbox.scheme().header_grabbed = nana::colors::chocolate;
-	lsbox.append_header("Name");
-	lsbox.append_header("Age");
-	auto cat = lsbox.at(0); //access the default category.
-	cat.append({ "Jack", "20" });	//Insert an item
-	cat.push_back("Rose");		//Insert another item
-	cat.back().text(1, "21");
+private:
+	void _m_make_menus()
+	{
+		menubar_.push_back("&FILE");
+		menubar_.at(0).append("E&xit", [this](menu::item_proxy&) {
+			close();
+		});
+	}
 
-  //Layout management
-  fm.div("vert <><<><weight=80% text><>><listbox><weight=24<><button><>><>");
-  fm["text"] << lab;
-	fm["listbox"] << lsbox;
-	fm["button"] << btn;
-  fm.collocate();
 
-	API::refresh_window(lsbox);
+	place   place_{ *this };
+	menubar menubar_{ *this };
+	textbox textbox_{ *this };
+};
 
-  //Show the form
-  fm.show();
 
-  //Start to event loop process, it blocks until the form is closed.
-  exec();
 
-  return 0;
+template<typename OUTPUT>
+void input_loop(OUTPUT& out, std::future<bool>& quit_flag)
+{
+	char buffer[512] = { 0 };
+	auto point = 0;
+
+	while(true)
+	{
+		while (_kbhit())
+		{
+			auto cur = _getch();
+			if (point > 511) point = 511;
+			if (cur != 13) buffer[point++] = cur;
+			else {
+				buffer[point] = '\0';
+				point = 0;
+				out.append(buffer + '\n');
+			}
+		}
+
+		if (quit_flag._Is_ready() && quit_flag.get()) {
+			std::cout << "Goodbye!" << std::endl;
+			return;
+		}
+	}
+}
+
+
+int main()
+{
+	notepad_form npform;
+	npform.show();
+
+	std::promise<bool> quit_flag;
+	auto fu1 = quit_flag.get_future();
+	auto fu2 = std::async(std::launch::async, input_loop<notepad_form>, std::ref(npform), std::ref(fu1));
+	
+	exec(); //main thread blocks till gui is closed
+
+	quit_flag.set_value(true); //signal child to terminate
+	fu2.get(); //wait for child
+
+	return 0;
 }
