@@ -10,6 +10,7 @@
 #include <chrono>
 
 #ifdef _WIN32
+#include <conio.h>
 #else
 #include <unistd.h>
 #include <fcntl.h>
@@ -22,8 +23,8 @@
 
 template<typename T>
 bool is_ready(std::future<T> const& fu)
-{ 
-	return fu.wait_for(std::chrono::seconds(0)) 
+{
+	return fu.wait_for(std::chrono::seconds(0))
 		== std::future_status::ready;
 }
 
@@ -48,7 +49,7 @@ public:
 		place_.collocate();
 	}
 
-	
+
 	void append(const std::string& str)
 	{
 		textbox_.append(str, false);
@@ -72,23 +73,29 @@ private:
 
 
 
-template<const size_t BufferSize = 256lu>
+template<const size_t BufferSize = 256>
 struct stdin_t
 {
 	stdin_t()
-		: buff_{0}
+		: buff_{ 0 }
 	{
-  	::fcntl(0, F_SETFL, ::fcntl(0, F_GETFL) | O_NONBLOCK);
+#ifndef _WIN32
+		::fcntl(0, F_SETFL, ::fcntl(0, F_GETFL) | O_NONBLOCK);
+#endif
 	}
 
+	stdin_t(const stdin_t&) = default;
+	stdin_t& operator=(const stdin_t&) = default;
 
-std::string get_input()
-{
-  const auto bytes_read = ::read(0, buff_, sizeof(buff_) - 1);
-  if(bytes_read > 0)
-  	return buff_;
-  return "";
-}
+	std::string get_input()
+	{
+#ifdef _WIN32
+		const auto& is = std::cin.read(buff_, sizeof(buff_) - 1);
+		return is.gcount() > 0 ? buff_ : "";
+#else
+		return ::read(0, buff_, sizeof(buff_) - 1) > 0? buff_: "";
+#endif
+	}
 
 
 private:
@@ -100,15 +107,16 @@ private:
 template<typename OUTPUT>
 void input_loop(OUTPUT& out, std::future<bool>& quit_flag)
 {
-	stdin_t<> stdin;
+	stdin_t<256> std_in;
 
-	while(true)
+	while (true)
 	{
-		auto in = stdin.get_input();
-		if(!in.empty())
+		auto in = std_in.get_input();
+		if (!in.empty())
 			out.append(in);
 
-		if (is_ready(quit_flag) && quit_flag.get()) {
+		if (is_ready(quit_flag) && quit_flag.get()) 
+		{
 			std::cout << "Goodbye!" << std::endl;
 			return;
 		}
@@ -124,7 +132,7 @@ int main()
 	std::promise<bool> quit_flag;
 	auto fu1 = quit_flag.get_future();
 	auto fu2 = std::async(std::launch::async, input_loop<notepad_form>, std::ref(npform), std::ref(fu1));
-	
+
 	exec(); //main thread blocks till gui is closed
 
 	quit_flag.set_value(true); //signal child to terminate
