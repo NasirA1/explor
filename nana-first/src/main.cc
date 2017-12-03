@@ -4,19 +4,10 @@
 #include <nana/gui/place.hpp>
 #include <nana/gui/msgbox.hpp>
 #include <nana/gui/filebox.hpp>
-#include <iostream>
 #include <string>
 #include <future>
 #include <chrono>
-
-#ifdef _WIN32
-#include <conio.h>
-#else
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <string.h>
-#endif
+#include <iostream>
 
 
 
@@ -76,27 +67,8 @@ private:
 template<const size_t BufferSize = 256>
 struct stdin_t
 {
-	stdin_t()
-		: buff_{ 0 }
-	{
-#ifndef _WIN32
-		::fcntl(0, F_SETFL, ::fcntl(0, F_GETFL) | O_NONBLOCK);
-#endif
-	}
-
-	stdin_t(const stdin_t&) = default;
-	stdin_t& operator=(const stdin_t&) = default;
-
-	std::string get_input()
-	{
-#ifdef _WIN32
-		const auto& is = std::cin.read(buff_, sizeof(buff_) - 1);
-		return is.gcount() > 0 ? buff_ : "";
-#else
-		return ::read(0, buff_, sizeof(buff_) - 1) > 0? buff_: "";
-#endif
-	}
-
+	stdin_t() : buff_{ 0 } {}
+	std::string get_input() { return std::cin.read(buff_, sizeof(buff_) - 1).gcount() > 0 ? buff_ : ""; }
 
 private:
 	char buff_[BufferSize];
