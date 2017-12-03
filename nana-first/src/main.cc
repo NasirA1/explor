@@ -7,9 +7,54 @@
 #include <iostream>
 #include <string>
 #include <future>
+#include <chrono>
+
 #ifdef _WIN32
 #include <conio.h>
+#else
+#include <stdio.h>
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
+ 
+int _kbhit()
+{
+  struct termios oldt, newt;
+  int ch, oldf;
+ 
+  tcgetattr(STDIN_FILENO, &oldt);
+  newt = oldt;
+  newt.c_lflag &= ~(ICANON | ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+  oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+  fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+ 
+  ch = getchar();
+ 
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+  fcntl(STDIN_FILENO, F_SETFL, oldf);
+ 
+  if(ch != EOF)
+  {
+    ungetc(ch, stdin);
+    return 1;
+  }
+ 
+  return 0;
+}
+
+inline static int _getch() { return getchar(); }
 #endif
+
+
+
+template<typename T>
+bool is_ready(std::future<T> const& fu)
+{ 
+	return fu.wait_for(std::chrono::seconds(0)) 
+		== std::future_status::ready;
+}
+
 
 
 using namespace nana;
@@ -75,7 +120,7 @@ void input_loop(OUTPUT& out, std::future<bool>& quit_flag)
 			}
 		}
 
-		if (quit_flag._Is_ready() && quit_flag.get()) {
+		if (is_ready(quit_flag) && quit_flag.get()) {
 			std::cout << "Goodbye!" << std::endl;
 			return;
 		}
