@@ -10,41 +10,13 @@
 #include <chrono>
 
 #ifdef _WIN32
-#include <conio.h>
 #else
-#include <stdio.h>
-#include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
- 
-int _kbhit()
-{
-  struct termios oldt, newt;
-  int ch, oldf;
- 
-  tcgetattr(STDIN_FILENO, &oldt);
-  newt = oldt;
-  newt.c_lflag &= ~(ICANON | ECHO);
-  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-  oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
-  fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
- 
-  ch = getchar();
- 
-  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-  fcntl(STDIN_FILENO, F_SETFL, oldf);
- 
-  if(ch != EOF)
-  {
-    ungetc(ch, stdin);
-    return 1;
-  }
- 
-  return 0;
-}
-
-inline static int _getch() { return getchar(); }
+#include <stdio.h>
+#include <string.h>
 #endif
+
 
 
 
@@ -100,25 +72,41 @@ private:
 
 
 
+template<const size_t BufferSize = 256lu>
+struct stdin_t
+{
+	stdin_t()
+		: buff_{0}
+	{
+  	::fcntl(0, F_SETFL, ::fcntl(0, F_GETFL) | O_NONBLOCK);
+	}
+
+
+std::string get_input()
+{
+  const auto bytes_read = ::read(0, buff_, sizeof(buff_) - 1);
+  if(bytes_read > 0)
+  	return buff_;
+  return "";
+}
+
+
+private:
+	char buff_[BufferSize];
+};
+
+
+
 template<typename OUTPUT>
 void input_loop(OUTPUT& out, std::future<bool>& quit_flag)
 {
-	char buffer[512] = { 0 };
-	auto point = 0;
+	stdin_t<> stdin;
 
 	while(true)
 	{
-		while (_kbhit())
-		{
-			auto cur = _getch();
-			if (point > 511) point = 511;
-			if (cur != 13) buffer[point++] = cur;
-			else {
-				buffer[point] = '\0';
-				point = 0;
-				out.append(buffer + '\n');
-			}
-		}
+		auto in = stdin.get_input();
+		if(!in.empty())
+			out.append(in);
 
 		if (is_ready(quit_flag) && quit_flag.get()) {
 			std::cout << "Goodbye!" << std::endl;
