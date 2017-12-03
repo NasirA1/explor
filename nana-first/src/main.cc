@@ -41,9 +41,10 @@ public:
 	}
 
 
-	void append(const std::string& str)
+	friend notepad_form& operator <<(notepad_form& self, const std::string& str)
 	{
-		textbox_.append(str, false);
+		self.textbox_.append(str, false);
+		return self;
 	}
 
 
@@ -85,7 +86,7 @@ void input_loop(OUTPUT& out, std::future<bool>& quit_flag)
 	{
 		auto in = std_in.get_input();
 		if (!in.empty())
-			out.append(in);
+			out << in;
 
 		if (is_ready(quit_flag) && quit_flag.get()) 
 		{
