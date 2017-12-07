@@ -8,7 +8,8 @@
 #include <future>
 #include <chrono>
 #include <iostream>
-
+#include <functional>
+#include <string.h>
 
 
 
@@ -65,11 +66,15 @@ private:
 
 
 
-template<const size_t BufferSize = 256>
+template<const size_t BufferSize = 256lu>
 struct stdin_t
 {
 	stdin_t() : buff_{ 0 } {}
-	std::string get_input() { return std::cin.read(buff_, sizeof(buff_) - 1).gcount() > 0 ? buff_ : ""; }
+	std::string get_input()
+	{
+		memset(buff_, 0, sizeof(buff_));
+		return std::cin.read(buff_, sizeof(buff_) - 1).gcount() > 0 ? buff_ : ""; 
+	}
 
 private:
 	char buff_[BufferSize];
@@ -80,7 +85,7 @@ private:
 template<typename OUTPUT>
 void input_loop(OUTPUT& out, std::future<bool>& quit_flag)
 {
-	stdin_t<256> std_in;
+	stdin_t<256lu> std_in;
 
 	while (true)
 	{
