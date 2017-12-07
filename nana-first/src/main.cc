@@ -7,23 +7,12 @@
 #include <string>
 #include <future>
 #include <chrono>
+#include "console.h"
 #include <iostream>
-#include <functional>
-#include <string.h>
-
-
-
-template<typename T>
-bool is_ready(std::future<T> const& fu)
-{
-	return fu.wait_for(std::chrono::seconds(0))
-		== std::future_status::ready;
-}
 
 
 
 using namespace nana;
-
 
 class notepad_form : public form
 {
@@ -66,26 +55,19 @@ private:
 
 
 
-template<const size_t BufferSize = 256lu>
-struct stdin_t
+
+template<typename T>
+bool is_ready(std::future<T> const& fu)
 {
-	stdin_t() : buff_{ 0 } {}
-	std::string get_input()
-	{
-		memset(buff_, 0, sizeof(buff_));
-		return std::cin.read(buff_, sizeof(buff_) - 1).gcount() > 0 ? buff_ : ""; 
-	}
-
-private:
-	char buff_[BufferSize];
-};
-
+	return fu.wait_for(std::chrono::seconds(0))
+		== std::future_status::ready;
+}
 
 
 template<typename OUTPUT>
 void input_loop(OUTPUT& out, std::future<bool>& quit_flag)
 {
-	stdin_t<256lu> std_in;
+	nonblocking_stdin_t<512> std_in;
 
 	while (true)
 	{
