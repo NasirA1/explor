@@ -12,6 +12,8 @@
 #include <iostream>
 
 
+constexpr size_t BufferSize = 1024 * 1024;
+
 
 using namespace nana;
 
@@ -70,7 +72,7 @@ bool is_ready(std::future<T> const& fu)
 template<typename OUTPUT>
 void input_loop(OUTPUT& out, std::future<bool>& quit_flag)
 {
-	nonblocking_stdin_t<1024> std_in;
+	nonblocking_stdin_t<BufferSize> std_in;
 
 	while (true)
 	{
