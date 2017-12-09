@@ -122,6 +122,8 @@
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>C:\Users\Nasir\Documents\GitHub\nana\build\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>nana_v140_$(Configuration)_x64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <StackReserveSize>
+      </StackReserveSize>
     </Link>
     <PostBuildEvent>
       <Command>copy tools\test_producer.py $(TargetDir)</Command>

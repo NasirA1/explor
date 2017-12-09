@@ -12,7 +12,7 @@
 #include <iostream>
 
 
-constexpr size_t BufferSize = 1024 * 1024;
+constexpr const size_t BufferSize = 1024;
 
 
 using namespace nana;
