@@ -19,9 +19,11 @@ class notepad_form : public form
 {
 public:
 	notepad_form()
+		: form(API::make_center(800, 600))
 	{
 		caption("Tap");
 		textbox_.borderless(true);
+		textbox_.line_wrapped(true);
 		API::effects_edge_nimbus(textbox_, effects::edge_nimbus::none);
 		_m_make_menus();
 
@@ -81,6 +83,8 @@ void input_loop(OUTPUT& out, std::future<bool>& quit_flag)
 			std::cout << "Goodbye!" << std::endl;
 			return;
 		}
+		
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 }
 

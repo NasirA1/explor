@@ -29,7 +29,7 @@ struct nonblocking_stdin_t
 	{
 		::memset(buff_, 0, sizeof(buff_));
 #ifdef _WIN32
-		static HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+		static HANDLE hStdin = ::GetStdHandle(STD_INPUT_HANDLE);
 		DWORD bytesAvailable = 0;
 		if (::PeekNamedPipe(hStdin, NULL, 0, NULL, &bytesAvailable, NULL))
 		{
