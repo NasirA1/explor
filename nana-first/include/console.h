@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #elif _WIN32
-#include <iostream>
+#include <Windows.h>
 #else
 static_assert(false, "Unsupported platform!")
 #endif
@@ -29,7 +29,13 @@ struct nonblocking_stdin_t
 	{
 		::memset(buff_, 0, sizeof(buff_));
 #ifdef _WIN32
-		std::cin.read(buff_, sizeof(buff_) - 1);
+		static HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+		DWORD bytesAvailable = 0;
+		if (::PeekNamedPipe(hStdin, NULL, 0, NULL, &bytesAvailable, NULL))
+		{
+			if (bytesAvailable > 0)
+				::ReadFile(hStdin, buff_, sizeof(buff_) - 1, NULL, NULL);
+		}
 #elif __linux
     ::read(0, buff_, sizeof(buff_) - 1);
 #endif
