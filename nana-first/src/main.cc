@@ -1,3 +1,4 @@
+#if 1
 #include <nana/gui.hpp>
 #include <nana/gui/widgets/menubar.hpp>
 #include <nana/gui/widgets/textbox.hpp>
@@ -67,7 +68,7 @@ bool is_ready(std::future<T> const& fu)
 template<typename OUTPUT>
 void input_loop(OUTPUT& out, std::future<bool>& quit_flag)
 {
-	nonblocking_stdin_t<512> std_in;
+	nonblocking_stdin_t<1024> std_in;
 
 	while (true)
 	{
@@ -100,3 +101,4 @@ int main()
 
 	return 0;
 }
+#endif

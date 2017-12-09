@@ -1,18 +1,18 @@
 #pragma once
-
 #include <string.h>
-
 #ifdef __linux__
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
 #elif _WIN32
-#include <Windows.h>
 #include <iostream>
 #else
 static_assert(false, "Unsupported platform!")
 #endif
 
+
+//Project Properties -> Debugging -> Command Arguments
+//"< $(TargetDir)\nana-first-vs2015.log"
 
 
 template<const size_t BufferSize>
@@ -29,8 +29,7 @@ struct nonblocking_stdin_t
 	{
 		::memset(buff_, 0, sizeof(buff_));
 #ifdef _WIN32
-		if (WaitForSingleObject(GetStdHandle(STD_INPUT_HANDLE), 100) == WAIT_OBJECT_0)
-			std::cin.read(buff_, sizeof(buff_) - 1);
+		std::cin.read(buff_, sizeof(buff_) - 1);
 #elif __linux
     ::read(0, buff_, sizeof(buff_) - 1);
 #endif
