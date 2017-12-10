@@ -1,5 +1,4 @@
 #pragma once
-#include <string.h>
 #ifdef __linux__
 #include <unistd.h>
 #include <fcntl.h>
@@ -27,17 +26,24 @@ struct nonblocking_stdin_t
 
 	std::string get_input()
 	{
-		::memset(buff_, 0, sizeof(buff_));
+    buff_[0] = '\0';
 #ifdef _WIN32
 		static HANDLE hStdin = ::GetStdHandle(STD_INPUT_HANDLE);
 		DWORD bytesAvailable = 0;
 		if (::PeekNamedPipe(hStdin, NULL, 0, NULL, &bytesAvailable, NULL))
 		{
 			if (bytesAvailable > 0)
-				::ReadFile(hStdin, buff_, sizeof(buff_) - 1, NULL, NULL);
+      {
+        DWORD bytesRead = 0;
+				::ReadFile(hStdin, buff_, sizeof(buff_) - 1, &bytesRead, NULL);
+        bytesRead = bytesRead > 0? bytesRead: 0;
+        buff_[bytesRead] = '\0';
+      }
 		}
 #elif __linux
-    ::read(0, buff_, sizeof(buff_) - 1);
+    auto bytes_read = ::read(STDIN_FILENO, buff_, sizeof(buff_) - 1);
+    bytes_read = bytes_read > 0? bytes_read: 0;
+    buff_[bytes_read] = '\0';
 #endif
 		return buff_;
 	}
