@@ -4,19 +4,8 @@
 import os
 #from time import sleep
 import argparse
+import mimetypes
 
-
-"""Make a hexdump"""
-import re, sys
-from binascii import hexlify
-from functools import partial
-
-def hexdump(filename, chunk_size=1<<15):
-  add_spaces = partial(re.compile(b'(..)').sub, br'\1 ')
-  write = getattr(sys.stdout, 'buffer', sys.stdout).write
-  with open(filename, 'rb') as file:
-    for chunk in iter(partial(file.read, chunk_size), b''):
-      write(add_spaces(hexlify(chunk)))
 
 
 class cd:
@@ -47,4 +36,6 @@ for dirName, subdirList, fileList in os.walk(rootDir):
   with cd (dirName):
     for fname in fileList:
       print('\t%s' % fname)
-      hexdump(fname)
+      if mimetypes.guess_type(fname)[0] == 'text/plain':
+        with open(fname, 'r') as file:
+          print(file.read())
