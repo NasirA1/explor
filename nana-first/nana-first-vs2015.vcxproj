@@ -81,6 +81,7 @@
     <IncludePath>C:\Users\Nasir\Documents\GitHub\nana\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\build\win32\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\build\win32\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>nana-first</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -93,6 +94,7 @@
     <IncludePath>C:\Users\Nasir\Documents\GitHub\nana\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\build\win32\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\build\win32\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>nana-first</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
