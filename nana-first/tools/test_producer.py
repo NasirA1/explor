@@ -36,6 +36,8 @@ for dirName, subdirList, fileList in os.walk(rootDir):
   with cd (dirName):
     for fname in fileList:
       print('\t%s' % fname)
-      if mimetypes.guess_type(fname)[0] == 'text/plain':
+      file_type = mimetypes.guess_type(fname)
+      if str(file_type[0]).startswith('text/'):
+        print(fname, file_type[0])
         with open(fname, 'r') as file:
           print(file.read())
